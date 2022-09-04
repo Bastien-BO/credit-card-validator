@@ -5,7 +5,8 @@ from pycard.version import VERSION
 setup(
     name='pycard',
     version=VERSION,
-    description='A simple wet effective',
+    description='A simple yet effective credit card validator',
+    long_description="A simple yet effective credit card validator",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python',
