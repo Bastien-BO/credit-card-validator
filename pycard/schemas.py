@@ -2,8 +2,8 @@
 All schemas to represent card brands
 """
 from dataclasses import dataclass
-from dataclasses import field
-from typing import List, Union
+from typing import List
+from typing import Union
 
 
 @dataclass

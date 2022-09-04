@@ -20,7 +20,7 @@ class _CardValidator:
     def __init__(self):
         self.card_brands: List[CardBrand] = []
 
-        with open("./pycard/data/card_brands.json", "r") as file:
+        with open("./pycard/card_brands.json", "r", encoding="utf-8") as file:
             data_imported = json.load(file)
             for brand in data_imported["card_brands"]:
                 self.card_brands.append(CardBrand(**brand))
@@ -40,6 +40,7 @@ class _CardValidator:
                         for prefix in rule.card_prefixs:
                             if card_number.startswith(prefix):
                                 return brand
+        raise NoBrandFoundException(f'No brand found for card number "{card_number}"')
 
     def _is_luhn_valid(
         self, number: str, skip_brand_finder: bool = False, brand: CardBrand = None
@@ -59,8 +60,10 @@ class _CardValidator:
                     f"card brand {card_brand.brand_name} doesn't support luhn algorithm"
                 )
 
-        r = [int(ch) for ch in number][::-1]
-        return (sum(r[0::2]) + sum(sum(divmod(d * 2, 10)) for d in r[1::2])) % 10 == 0
+        reg = [int(ch) for ch in number][::-1]
+        return (
+            sum(reg[0::2]) + sum(sum(divmod(digit * 2, 10)) for digit in reg[1::2])
+        ) % 10 == 0
 
     def card_brands_to_dict(self) -> List[dict]:
         """
@@ -84,8 +87,6 @@ class _CardValidator:
         if brand:
             return brand
 
-        raise NoBrandFoundException(f'No brand found for card number "{card_number}"')
-
     def card_verified(
         self,
         card_number: str,
@@ -104,7 +105,9 @@ class _CardValidator:
         except NoBrandFoundException:
             brand = CardBrand("Unknown", "unknown", [])
 
-        return CardOut(brand.skip_luhn, card_number, brand.brand_name, luhn_valid, brand.name)
+        return CardOut(
+            brand.skip_luhn, card_number, brand.brand_name, luhn_valid, brand.name
+        )
 
 
 @lru_cache()
