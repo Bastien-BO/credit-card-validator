@@ -2,7 +2,7 @@
 All tests related to card brands
 """
 
-from pycard.card_validator import card_validator
+from credit_card_validator.card_validator import card_validator
 
 
 def test_card_validator_loading():
