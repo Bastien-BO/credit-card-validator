@@ -35,20 +35,23 @@ class _CardValidator:
         """
 
         number_size = len(card_number)
-        brand = [
-            brand
-            for brand in self.card_brands
-            for rule in brand.card_rules
-            for size in rule.card_lengths
-            if number_size == size
-            for prefix in rule.card_prefixs
-            if card_number.startswith(prefix)
-        ]
+        brand = next(
+            (
+                brand
+                for brand in self.card_brands
+                for rule in brand.card_rules
+                for size in rule.card_lengths
+                if number_size == size
+                for prefix in rule.card_prefixs
+                if card_number.startswith(prefix)
+            ),
+            None,
+        )
         if not brand:
             raise NoBrandFoundException(
                 f'No brand found for card number "{card_number}"'
             )
-        return brand[0]
+        return brand
 
     def _is_luhn_valid(
         self, number: str, skip_brand_finder: bool = False, brand: CardBrand = None
