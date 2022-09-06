@@ -35,14 +35,20 @@ class _CardValidator:
         """
 
         number_size = len(card_number)
-        for brand in self.card_brands:
-            for rule in brand.card_rules:
-                for size in rule.card_lengths:
-                    if number_size == size:
-                        for prefix in rule.card_prefixs:
-                            if card_number.startswith(prefix):
-                                return brand
-        raise NoBrandFoundException(f'No brand found for card number "{card_number}"')
+        brand = [
+            brand
+            for brand in self.card_brands
+            for rule in brand.card_rules
+            for size in rule.card_lengths
+            if number_size == size
+            for prefix in rule.card_prefixs
+            if card_number.startswith(prefix)
+        ]
+        if not brand:
+            raise NoBrandFoundException(
+                f'No brand found for card number "{card_number}"'
+            )
+        return brand[0]
 
     def _is_luhn_valid(
         self, number: str, skip_brand_finder: bool = False, brand: CardBrand = None
@@ -56,6 +62,7 @@ class _CardValidator:
         """
 
         if not skip_brand_finder and CardBrand is None:
+            print("passe ici")
             card_brand = brand if brand is not None else self._card_brand(number)
             if card_brand.skip_luhn:
                 raise LuhnUnsupportedEception(
@@ -102,12 +109,11 @@ class _CardValidator:
         luhn_valid = None
         try:
             brand = self._brand(card_number)
-            if not brand.skip_luhn:
-                luhn_valid = self._is_luhn_valid(card_number, brand=brand)
-
         except NoBrandFoundException:
             brand = CardBrand("Unknown", "unknown", [])
 
+        if not brand.skip_luhn:
+            luhn_valid = self._is_luhn_valid(card_number, brand=brand)
         return CardOut(
             brand.skip_luhn, card_number, brand.brand_name, luhn_valid, brand.name
         )
